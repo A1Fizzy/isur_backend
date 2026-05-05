@@ -2,7 +2,7 @@
 
 import { Request, Response } from "express";
 import { ScheduleService } from "../services/ScheduleService";
-import { PlannedScheduleService } from "../services/PlannedScheduleService"; // ← Новый сервис
+import { PlannedScheduleService } from "../services/PlannedScheduleService";
 import { GetScheduleOptions } from "../services/ScheduleService";
 import prisma from "../config/database";
 

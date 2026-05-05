@@ -7,6 +7,8 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import vehicleRoutes from './routes/vehicleRoutes';
 import employeeRoutes from './routes/employeeRoutes';
 import scheduleRoute from './routes/scheduleRoutes';
+import customerRoutes from './routes/customerRoutes';
+import serviceRoutes from './routes/serviceRoutes';
 
 
 dotenv.config();
@@ -25,6 +27,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/schedule', scheduleRoute);
+app.use('/api/customers', customerRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
