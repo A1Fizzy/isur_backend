@@ -15,21 +15,23 @@ export class ServiceRepository {
     });
   }
 
-  async create(data: {name: string; duration: number }): Promise<Service> {
+  async create(data: {name: string; duration: number, specialization: string }): Promise<Service> {
     return await prisma.service.create({
        data: {
         name: data.name,
-        duration: data.duration
+        duration: data.duration,
+        specialization: data.specialization
       }
     });
   }
 
-  async update(id: number,  data: { name?: string; duration?: number }): Promise<Service> {
+  async update(id: number,  data: { name?: string; duration?: number; specialization?: string }): Promise<Service> {
     return await prisma.service.update({
       where: { id },
        data: {
         name: data.name,
-        duration: data.duration
+        duration: data.duration,
+        specialization: data.specialization
       }
     });
   }

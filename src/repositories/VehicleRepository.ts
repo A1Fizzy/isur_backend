@@ -21,7 +21,8 @@ export class VehicleRepository {
         data: {
         plateNumber: data.plateNumber,
         model:       data.model,
-        year:        data.year
+        year:        data.year,
+        status:      data.status
         }
     });
     }

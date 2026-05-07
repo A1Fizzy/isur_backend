@@ -6,6 +6,7 @@ import {
   Resource,
   PostType,
   SkillLevel,
+  Specialization,
 } from "../scheduler/types";
 
 export class PlannedScheduleService {
@@ -52,6 +53,7 @@ export class PlannedScheduleService {
           new Date(order.preferredTime).getTime() + 2 * 60 * 60 * 1000,
         ), // +2 часа
         requiredPostType: "UNIVERSAL" as PostType,
+        requiredSpecialization: order.service.specialization as Specialization,
         requiredSkill: "A" as SkillLevel,
         priority: order.priority === "URGENT" ? "URGENT" : "NORMAL",
       }));
@@ -61,6 +63,7 @@ export class PlannedScheduleService {
         kind: "MECHANIC" as const,
         skill: "A" as const,
         postType: "UNIVERSAL" as const,
+        specialization: master.specialization || 'universal',
         workStart: this.createWorkTime(planningDate, 8, 0), // 08:00
         workEnd: this.createWorkTime(planningDate, 18, 0), // 18:00
       }));
@@ -104,4 +107,5 @@ export class PlannedScheduleService {
     workTime.setHours(hour, minute, 0, 0);
     return workTime;
   }
+
 }

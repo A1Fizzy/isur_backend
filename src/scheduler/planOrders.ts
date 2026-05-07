@@ -27,6 +27,20 @@ function isResourceSuitable(order: ServiceOrder, resource: Resource): boolean {
     }
   }
 
+  if (order.requiredSpecialization) {
+    // Переводим строку в один формат
+    const reqSpec = order.requiredSpecialization.toLowerCase();
+    const masterSpec = resource.specialization?.toLowerCase();
+
+    if (!masterSpec) return false;
+
+    // Мастер должен иметь нужную специализацию
+    // Можно расширить: универсальный мастер → может всё
+    if (reqSpec !== 'universal' && masterSpec !== 'universal' && masterSpec !== reqSpec) {
+      return false;
+    }
+  }
+
   return true;
 }
 

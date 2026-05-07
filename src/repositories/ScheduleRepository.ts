@@ -51,7 +51,7 @@ export class ScheduleRepository {
 
     return orders.map((order) => {
       const start = new Date(order.preferredTime);
-      const end = new Date(start.getTime() + order.duration * 60 * 1000);
+      const end = new Date(start.getTime() + order.service.duration * 60 * 1000);
 
       return {
         id: order.id,

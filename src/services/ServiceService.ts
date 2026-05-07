@@ -20,7 +20,7 @@ export class ServiceService {
     return service;
   }
 
-  async createService( data: { name: string; duration: number }): Promise<Service> {
+  async createService( data: { name: string; duration: number, specialization: string }): Promise<Service> {
     // Проверка на дубликат по названию
     const existingByName = await this.repository.findByName(data.name);
     if (existingByName) {
@@ -35,7 +35,7 @@ export class ServiceService {
     return this.repository.create(data);
   }
 
-  async updateService(id: number,  data: { name?: string; duration?: number }): Promise<Service> {
+  async updateService(id: number,  data: { name?: string; duration?: number; specialization?: string }): Promise<Service> {
     const service = await this.repository.getById(id);
     if (!service) {
       throw new Error('Услуга не найдена');

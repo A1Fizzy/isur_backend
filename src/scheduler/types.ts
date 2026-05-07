@@ -3,6 +3,14 @@
 export type ServiceType = 'MAINTENANCE' | 'DIAGNOSTICS' | 'REPAIR';
 export type SkillLevel = 'A' | 'B' | 'C';
 export type PostType = 'LIFT' | 'DIAG' | 'UNIVERSAL';
+export type Specialization = 
+  | 'electric' 
+  | 'engine' 
+  | 'transmission'
+  | 'body'
+  | 'tire'
+  | 'mechanic'
+  | 'universal';
 
 export interface ServiceOrder {
   id: string;
@@ -16,6 +24,7 @@ export interface ServiceOrder {
 
   requiredPostType: PostType;
   requiredSkill: SkillLevel;
+  requiredSpecialization: Specialization;
 
   priority: string;
 }
@@ -29,6 +38,7 @@ export interface Resource {
 
   // Для механиков
   skill?: SkillLevel;
+  specialization?: string;
 
   workStart: Date; // Начало рабочего дня
   workEnd: Date;   // Конец рабочего дня

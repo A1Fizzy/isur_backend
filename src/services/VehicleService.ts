@@ -5,12 +5,14 @@ interface CreateVehicleData {
   plateNumber: string;
   model: string;
   year: number;
+  status: string;
 }
 
 interface UpdateVehicleData {
   plateNumber?: string;
   model?: string;
   year?: number;
+  status?: string;
 }
 
 export class VehicleService {
@@ -22,7 +24,7 @@ export class VehicleService {
 
   async createVehicle(data: CreateVehicleData): Promise<Vehicle> {
     // Проверка на корректность данных
-    if (!data.plateNumber || !data.model || !data.year) {
+    if (!data.plateNumber || !data.model || !data.year || !data.status) {
       throw new Error('Все поля обязательны');
     }
 

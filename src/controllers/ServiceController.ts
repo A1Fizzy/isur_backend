@@ -35,14 +35,14 @@ export class ServiceController {
 
   async createService(req: Request, res: Response): Promise<void> {
     try {
-      const { name, duration } = req.body;
+      const { name, duration, specialization } = req.body;
 
-      if (!name || duration === undefined) {
-        res.status(400).json({ error: 'Название и длительность обязательны' });
+      if (!name || duration === undefined || specialization === undefined) {
+        res.status(400).json({ error: 'Название, длительность и специализация обязательны' });
         return;
       }
 
-      const service = await this.service.createService({ name, duration });
+      const service = await this.service.createService({ name, duration, specialization });
       res.status(201).json(service);
     } catch (error: any) {
       const status = error.statusCode || 400;
@@ -58,11 +58,12 @@ export class ServiceController {
         return;
       }
 
-      const { name, duration } = req.body;
+      const { name, duration, specialization } = req.body;
       const updateData: any = {};
 
       if (name !== undefined) updateData.name = name;
       if (duration !== undefined) updateData.duration = duration;
+      if (specialization !== undefined) updateData.specialization = specialization;
 
       const service = await this.service.updateService(id, updateData);
       res.status(200).json(service);
