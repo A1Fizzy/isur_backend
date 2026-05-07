@@ -16,8 +16,10 @@ export class OrderController {
       const order = await this.service.createOrder({
         customerId: Number(body.customerId),
         serviceId: Number(body.serviceId),
+        vehicleId: Number(body.vehicleId),
         preferredTime: new Date(body.preferredTime),
-        duration: Number(body.duration)
+        duration: Number(body.duration),
+        priority: body.priority
       });
 
       res.status(201).json(order);
@@ -142,6 +144,22 @@ export class OrderController {
       res.status(500).json({
         error: error.message || 'Не удалось обновить заказ',
       });
+    }
+  }
+
+    async deleteOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        res.status(400).json({ error: 'Некорректный ID заказа' });
+        return;
+      }
+
+      await this.service.deleteOrder(id);
+      res.status(204).send();
+    } catch (error: any) {
+      const status = error.statusCode || 400;
+      res.status(status).json({ error: error.message });
     }
   }
 }

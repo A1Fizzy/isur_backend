@@ -5,10 +5,12 @@ import { Order } from '@prisma/client';
 interface CreateOrderData {
   customerId: number;
   serviceId: number;
+  vehicleId: number;
   preferredTime: Date;
   duration: number;
   employeeId?: number | null;
   status?: string;
+  priority?: "NORMAL" | "URGENT";
 }
 
 export class OrderRepository {
@@ -21,7 +23,8 @@ export class OrderRepository {
       include: { 
         customer: true, 
         service: true, 
-        employee: true 
+        employee: true,
+        vehicle: true,
       }
     });
   }
@@ -32,7 +35,8 @@ export class OrderRepository {
       include: { 
         customer: true, 
         service: true, 
-        employee: true 
+        employee: true,
+        vehicle: true 
       }
     });
   }
@@ -41,6 +45,18 @@ export class OrderRepository {
     return await prisma.order.update({
       where: { id },
       data,
+    });
+  }
+
+  async getById(id: number): Promise<Order | null> {
+    return await prisma.order.findUnique({
+      where: { id }
+    });
+  }
+
+  async delete(id: number): Promise<Order> {
+    return await prisma.order.delete({
+      where: { id }
     });
   }
 }

@@ -1,40 +1,107 @@
-import prisma from '../config/database';
-import { planOrders } from '../scheduler/scheduler';
-import { toSchedulerOrder } from '../scheduler/dtos/order.dto';
-import { createResourcesFromEmployees } from '../scheduler/resources';
-import { ScheduleItem } from '../scheduler/scheduler';
+// src/services/PlannedScheduleService.ts
+import { planOrders } from "../scheduler/planOrders";
+import prisma from "../config/database";
+import {
+  ServiceOrder,
+  Resource,
+  PostType,
+  SkillLevel,
+} from "../scheduler/types";
 
 export class PlannedScheduleService {
-  async generate(): Promise<ScheduleItem[]> {
-    // Только заказы со статусом pending и без мастера
-    const orders = await prisma.order.findMany({
-      where: {
-        status: 'pending',
-        employeeId: null,
-      },
-      include: {
-        customer: true,
-        service: true,
-      },
+  async generate(targetDate?: Date) {
+    try {
+      console.log("🚀 Запуск генерации рекомендаций");
+      const [dbOrders, dbMasters] = await Promise.all([
+        this.loadPendingOrders(),
+        this.loadAvailableResources(),
+      ]);
+
+      let planningDate: Date;
+
+      if (dbOrders.length > 0) {
+        // Берём дату из preferredTime первого заказа
+        const orderDate = new Date(dbOrders[0].preferredTime);
+        planningDate = new Date(
+          orderDate.getFullYear(),
+          orderDate.getMonth(),
+          orderDate.getDate(),
+        );
+      } else if (targetDate) {
+        // Если заказов нет — используем targetDate
+        planningDate = new Date(
+          targetDate.getFullYear(),
+          targetDate.getMonth(),
+          targetDate.getDate(),
+        );
+      } else {
+        // По умолчанию — сегодня
+        planningDate = new Date();
+        planningDate.setHours(0, 0, 0, 0);
+      }
+
+      console.log("📅 Дата для планирования:", planningDate.toISOString());
+
+      const orders = dbOrders.map((order) => ({
+        id: order.id.toString(),
+        vehicleId: order.vehicleId ? String(order.vehicleId) : "unknown",
+        serviceType: this.mapServiceNameToType(order.service.name),
+        durationMinutes: order.service.duration,
+        desiredStart: new Date(order.preferredTime),
+        desiredEnd: new Date(
+          new Date(order.preferredTime).getTime() + 2 * 60 * 60 * 1000,
+        ), // +2 часа
+        requiredPostType: "UNIVERSAL" as PostType,
+        requiredSkill: "A" as SkillLevel,
+        priority: order.priority === "URGENT" ? "URGENT" : "NORMAL",
+      }));
+
+      const resources = dbMasters.map((master) => ({
+        id: master.id.toString(),
+        kind: "MECHANIC" as const,
+        skill: "A" as const,
+        postType: "UNIVERSAL" as const,
+        workStart: this.createWorkTime(planningDate, 8, 0), // 08:00
+        workEnd: this.createWorkTime(planningDate, 18, 0), // 18:00
+      }));
+
+      return planOrders(orders, resources);
+    } catch (error) {
+      console.error("Ошибка в PlannedScheduleService:", error);
+      throw error;
+    }
+  }
+
+  private async loadPendingOrders() {
+    return await prisma.order.findMany({
+      where: { status: "pending" },
+      include: { service: true },
     });
+  }
 
-    console.log('🔹 Количество неназначенных заказов:', orders.length);
-    console.log('📦 Переданы в планировщик:', orders.map(o => ({
-      id: o.id,
-      serviceName: o.service.name,
-      preferredTime: o.preferredTime,
-      duration: o.duration
-    })));
+  private async loadAvailableResources() {
+    const masters = await prisma.employee.findMany();
+    return masters;
+  }
 
-    const employees = await prisma.employee.findMany();
-    console.log('👷 Мастера:', employees.map(e => ({ id: e.id, name: e.name })));
+  private mapServiceNameToType(
+    name: string,
+  ): "MAINTENANCE" | "DIAGNOSTICS" | "REPAIR" {
+    if (name.includes("ТО")) return "MAINTENANCE";
+    if (name.includes("диагноз")) return "DIAGNOSTICS";
+    return "REPAIR";
+  }
 
-    const schedulerOrders = orders.map(toSchedulerOrder);
-    const resources = createResourcesFromEmployees(employees);
-
-    const result = planOrders(schedulerOrders, resources);
-    console.log('✅ Результат планировщика:', result.length, 'задач');
-
+  private setDayForTime(timeStr: string, date: Date): Date {
+    const [h, m] = timeStr.split(":").map(Number);
+    const result = new Date(date);
+    result.setHours(h, m, 0, 0);
     return result;
+  }
+
+  private createWorkTime(date: Date, hour: number, minute: number): Date {
+    const workTime = new Date(date);
+    workTime.setHours(hour, minute, 0, 0);
+    return workTime;
   }
 }

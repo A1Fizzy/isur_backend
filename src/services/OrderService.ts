@@ -6,7 +6,9 @@ interface CreateOrderData {
   customerId: number;
   serviceId: number;
   preferredTime: Date;
+  vehicleId: number;
   duration: number;
+  priority: "NORMAL" | "URGENT";
 }
 
 type UpdateOrderData = Partial<Omit<Order, 'id' | 'createdAt'>>;
@@ -19,8 +21,8 @@ export class OrderService {
   }
 
   async createOrder(data: CreateOrderData): Promise<Order> {
-    if (!data.customerId || !data.serviceId) {
-      throw new Error('Missing required fields: customerId or serviceId');
+    if (!data.customerId || !data.serviceId || !data.vehicleId) {
+      throw new Error('Missing required fields: customerId or serviceId or vehicleId');
     }
 
     return await this.repository.create({
@@ -59,5 +61,13 @@ export class OrderService {
       console.error('Error updating order:', error);
       throw error;
     }
+  }
+
+  async deleteOrder(id: number): Promise<void> {
+    const order = await this.repository.getById(id);
+    if (!order) {
+      throw new Error('Заказ не найден');
+    }
+    await this.repository.delete(id);
   }
 }

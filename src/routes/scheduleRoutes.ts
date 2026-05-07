@@ -18,10 +18,10 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
 router.use(authMiddleware);
 
 // Текущее расписание (уже назначенные работы)
-router.get('/', controller.getSchedule);
+router.get('/', controller.getSchedule.bind(controller));
 
 // Рекомендации от интеллектуального планировщика
-router.get('/recommend', requireAdmin, controller.getRecommendations);
-router.post('/apply-recommendations', requireAdmin, controller.applyRecommendations);
+router.get('/recommend', requireAdmin, controller.getRecommendations.bind(controller));
+router.post('/apply-recommendations', requireAdmin, controller.applyRecommendations.bind(controller));
 
 export default router;
