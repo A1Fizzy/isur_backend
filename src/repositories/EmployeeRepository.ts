@@ -29,9 +29,9 @@ export class EmployeeRepository {
   async update(id: number, data: any): Promise<any> {
     return await prisma.employee.update({
         where: { id },
-        data: {
-        name: data.name,
-        specialization: data.specialization
+          data: {
+          name: data.name,
+          specialization: data.specialization
         }
     });
   }

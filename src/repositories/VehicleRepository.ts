@@ -15,17 +15,17 @@ export class VehicleRepository {
       where: { id },
     });
   }
-    async update(id: number, data: any): Promise<any> {
-    return await prisma.vehicle.update({
-        where: { id },
-        data: {
+  async update(id: number, data: {plateNumber?: string; model?: string; year?: number; status?: string}): Promise<Vehicle> {
+  return await prisma.vehicle.update({
+      where: { id },
+      data: {
         plateNumber: data.plateNumber,
         model:       data.model,
         year:        data.year,
         status:      data.status
-        }
-    });
-    }
+      }
+  });
+  }
 
   async delete(id: number): Promise<void> {
     await prisma.vehicle.delete({

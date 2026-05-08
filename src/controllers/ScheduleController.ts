@@ -99,7 +99,7 @@ export class ScheduleController {
 
         if (isNaN(orderId) || isNaN(masterId)) continue;
 
-        const order = await prisma.order.findUnique({ where: { id: orderId } });
+        const order = await prisma.order.findUnique({ where: { id: orderId }, include: {vehicle: true} });
         if (!order || order.employeeId !== null) continue;
 
         await prisma.order.update({
@@ -110,6 +110,15 @@ export class ScheduleController {
             preferredTime: new Date(rec.start) // принимаем как есть
           }
         });
+
+        if (order.vehicleId) {
+        await prisma.vehicle.update({
+          where: { id: order.vehicleId },
+           data: {
+            status: 'in_repair'
+          }
+        });
+      }
       }
 
       return res.status(200).json({ message: 'Рекомендации применены' });
