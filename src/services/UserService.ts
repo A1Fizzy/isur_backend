@@ -10,7 +10,7 @@ export class UserService {
   }
 
   async findById(id: number): Promise<User | null> {
-    return await this.repository.findById(id);
+    return await this.repository.getById(id);
   }
 
   async update(id: number, data: UpdateUserProfileInput): Promise<User> {
@@ -24,5 +24,12 @@ export class UserService {
     }
 
     return await this.repository.update(id, data);
+  }
+  async deleteUser(id: number): Promise<void> {
+    const user = await this.repository.getById(id);
+    if (!user) {
+      throw new Error('Пользователь не найден');
+    }
+    await this.repository.delete(id);
   }
 }

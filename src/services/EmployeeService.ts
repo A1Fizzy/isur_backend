@@ -64,4 +64,12 @@ export class EmployeeService {
     // Обновляем данные
     return await this.repository.update(existing.id, data);
   }
+
+  async deleteEmployee(id: number): Promise<void> {
+    const employee = await this.repository.findById(id);
+    if (!employee) {
+      throw new Error('Мастер не найдена');
+    }
+    await this.repository.delete(id);
+  }
 }

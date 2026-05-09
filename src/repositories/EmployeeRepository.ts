@@ -1,8 +1,21 @@
-import prisma from '../config/database';
-import { Employee } from '@prisma/client';
+import prisma from "../config/database";
+import { Employee } from "@prisma/client";
 
 export class EmployeeRepository {
   async create(data: any): Promise<Employee> {
+    // Проверяем, не назначен ли уже этот userId другому мастеру
+    if (data.userId) {
+      const existing = await prisma.employee.findUnique({
+        where: { userId: data.userId },
+      });
+
+      if (existing) {
+        throw new Error(
+          `Пользователь с userId=${data.userId} уже является мастером`,
+        );
+      }
+    }
+
     return await prisma.employee.create({ data });
   }
 
@@ -28,16 +41,16 @@ export class EmployeeRepository {
 
   async update(id: number, data: any): Promise<any> {
     return await prisma.employee.update({
-        where: { id },
-          data: {
-          name: data.name,
-          specialization: data.specialization
-        }
+      where: { id },
+      data: {
+        name: data.name,
+        specialization: data.specialization,
+      },
     });
   }
 
   async delete(id: number): Promise<void> {
-    await prisma.vehicle.delete({
+    await prisma.employee.delete({
       where: { id },
     });
   }

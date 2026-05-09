@@ -91,5 +91,21 @@ export class EmployeeController {
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
-  };
+  }
+
+  async deleteEmployee(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        res.status(400).json({ error: 'Некорректный ID мастера' });
+        return;
+      }
+
+      await this.service.deleteEmployee(id);
+      res.status(204).send();
+    } catch (error: any) {
+      const status = error.statusCode || 400;
+      res.status(status).json({ error: error.message });
+    }
+  }
 }
