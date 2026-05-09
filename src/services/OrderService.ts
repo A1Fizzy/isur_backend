@@ -1,5 +1,6 @@
 import { Order } from '@prisma/client';
 import { OrderRepository } from '../repositories/OrderRepository';
+import prisma from '../config/database';
 
 // Тип для данных создания заказа
 interface CreateOrderData {
@@ -61,6 +62,49 @@ export class OrderService {
       console.error('Error updating order:', error);
       throw error;
     }
+  }
+
+  async completeOrder(orderId: number): Promise<{ success: boolean; message: string }> {
+    // Проверяем существование заказа
+    const order = await this.repository.findById(orderId);
+    if (!order) {
+      throw new Error('Заказ не найден');
+    }
+
+    // Нельзя завершить уже завершённый заказ
+    if (order.status === 'completed') {
+      throw new Error('Заказ уже завершён');
+    }
+
+    // Выполняем всё в транзакции
+    await prisma.$transaction(async (tx) => {
+      // 1. Обновляем статус заказа
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'completed' },
+      });
+
+      // 2. Если есть автомобиль — проверяем активные заказы
+      if (order.vehicleId) {
+        // Считаем заказы "в работе", исключая текущий (он уже completed)
+        const activeCount = await tx.order.count({
+          where: {
+            vehicleId: order.vehicleId,
+            status: 'in_progress',
+          },
+        });
+
+        // Если активных заказов нет — возвращаем авто в эксплуатацию
+        if (activeCount === 0) {
+          await tx.vehicle.update({
+            where: { id: order.vehicleId },
+            data: { status: 'in_service' },
+          });
+        }
+      }
+    });
+
+    return { success: true, message: 'Заказ успешно завершён' };
   }
 
   async deleteOrder(id: number): Promise<void> {

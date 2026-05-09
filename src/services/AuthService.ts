@@ -6,7 +6,7 @@ import { hashPassword } from '../utils/hash';
 interface CreateUserInput {
   name: string;
   email: string;
-  password: string; // Хранится хэшированным в БД
+  password: string;
 }
 
 export class AuthService {

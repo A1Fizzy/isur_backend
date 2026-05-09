@@ -147,7 +147,33 @@ export class OrderController {
     }
   }
 
-    async deleteOrder(req: Request, res: Response): Promise<void> {
+  async completeOrder(req: Request, res: Response): Promise<void> {
+    const orderId = parseInt(req.params.id, 10);
+
+    // Валидация входных данных
+    if (isNaN(orderId)) {
+      res.status(400).json({ error: 'Некорректный ID заказа' });
+      return;
+    }
+
+    try {
+      const result = await this.service.completeOrder(orderId);
+      res.status(200).json(result);
+    } catch (error: any) {
+      console.error('Ошибка завершения заказа:', error);
+
+      // Обработка бизнес-ошибок
+      if (error.message === 'Заказ не найден') {
+        res.status(404).json({ error: error.message });
+      } else if (error.message === 'Заказ уже завершён') {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Не удалось завершить заказ' });
+      }
+    }
+  }
+  
+  async deleteOrder(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id, 10);
       if (isNaN(id)) {

@@ -22,7 +22,7 @@ export interface GetScheduleOptions {
 export class ScheduleRepository {
   async getSchedule(options: GetScheduleOptions = {}): Promise<ScheduleEntry[]> {
     const where: Prisma.OrderWhereInput = {
-      status: { not: 'cancelled' },
+      status: { notIn: ['cancelled', 'completed'] },
       employeeId: {
         not: null,
         equals: options.masterId || undefined,

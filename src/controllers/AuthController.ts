@@ -60,6 +60,7 @@ export class AuthController {
 
       const isMatch = await comparePassword(password, user.password);
       if (!isMatch) {
+        console.log('пароль')
         res.status(401).json({ error: 'Неверный email или пароль' });
         return;
       }

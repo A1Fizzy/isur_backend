@@ -54,6 +54,29 @@ export class OrderRepository {
     });
   }
 
+  async updateStatus(id: number, status: string): Promise<Order> {
+    return await prisma.order.update({
+      where: { id },
+      data: { status },
+    });
+  }
+
+  async countActiveByVehicle(vehicleId: number, excludeStatuses: string[] = []): Promise<number> {
+    return await prisma.order.count({
+      where: {
+        vehicleId,
+        status: { notIn: excludeStatuses },
+      },
+    });
+  }
+
+  async updateVehicleStatus(vehicleId: number, status: string): Promise<void> {
+    await prisma.vehicle.update({
+      where: { id: vehicleId },
+      data: { status },
+    });
+  }
+
   async delete(id: number): Promise<Order> {
     return await prisma.order.delete({
       where: { id }
