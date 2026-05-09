@@ -96,11 +96,13 @@ export class ScheduleController {
       for (const rec of recommendations) {
         const orderId = parseInt(rec.orderId, 10);
         const masterId = parseInt(rec.resourceId, 10);
+        console.log('📥 Принимаю рекомендацию:', JSON.stringify(rec));
+        console.log(`🔍 Парсинг: orderId=${orderId}, "masterId=${masterId}`);
 
         if (isNaN(orderId) || isNaN(masterId)) continue;
 
         const order = await prisma.order.findUnique({ where: { id: orderId }, include: {vehicle: true} });
-        if (!order || order.employeeId !== null) continue;
+        if (!order) continue;
 
         await prisma.order.update({
           where: { id: orderId },
@@ -110,6 +112,8 @@ export class ScheduleController {
             preferredTime: new Date(rec.start) // принимаем как есть
           }
         });
+
+        console.log(`✅ Сохранено: заказ ${orderId} → мастер ${masterId}`);
 
         if (order.vehicleId) {
         await prisma.vehicle.update({

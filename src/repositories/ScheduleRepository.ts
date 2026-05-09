@@ -25,7 +25,7 @@ export class ScheduleRepository {
       status: { notIn: ['cancelled', 'completed'] },
       employeeId: {
         not: null,
-        equals: options.masterId || undefined,
+        equals: options.masterId,
       },
       preferredTime: {
         gte: options.from,

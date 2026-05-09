@@ -1,5 +1,3 @@
-// src/scheduler/utils.ts
-
 import { differenceInMinutes } from 'date-fns';
 import { ScheduleItem } from './types';
 
@@ -12,10 +10,19 @@ export function hasConflict(
   start: Date,
   end: Date
 ): boolean {
-  return schedule.some(item =>
-    item.resourceId === resourceId &&
-    !(end <= item.start || start >= item.end)
-  );
+  return schedule.some(item => {
+    // Проверяем только того же мастера
+    if (item.resourceId !== resourceId) return false;
+
+    // Проверяем пересечение по времени
+    const itemStart = new Date(item.start).getTime();
+    const itemEnd = new Date(item.end).getTime();
+    const newStart = start.getTime();
+    const newEnd = end.getTime();
+
+    // Пересечение: новый интервал пересекается с существующим
+    return newStart < itemEnd && newEnd > itemStart;
+  });
 }
 
 /**

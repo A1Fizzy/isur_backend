@@ -7,7 +7,9 @@ import {
   PostType,
   SkillLevel,
   Specialization,
+  ScheduleItem,
 } from "../scheduler/types";
+import { endOfDay, startOfDay } from "date-fns";
 
 export class PlannedScheduleService {
   async generate(targetDate?: Date) {
@@ -43,6 +45,18 @@ export class PlannedScheduleService {
 
       console.log("📅 Дата для планирования:", planningDate.toISOString());
 
+      if (!targetDate) {
+        throw new Error("targetDate не может быть undefined");
+      }
+
+      // 2. Сначала попробуем найти ВСЕ активные заказы без фильтра по дате
+      const allActiveOrders = await prisma.order.findMany({
+        where: {
+          status: { notIn: ["cancelled", "completed"] },
+        },
+        include: { service: true },
+      });
+
       const orders = dbOrders.map((order) => ({
         id: order.id.toString(),
         vehicleId: order.vehicleId ? String(order.vehicleId) : "unknown",
@@ -63,7 +77,7 @@ export class PlannedScheduleService {
         kind: "MECHANIC" as const,
         skill: "A" as const,
         postType: "UNIVERSAL" as const,
-        specialization: master.specialization || 'universal',
+        specialization: master.specialization || "universal",
         workStart: this.createWorkTime(planningDate, 8, 0), // 08:00
         workEnd: this.createWorkTime(planningDate, 18, 0), // 18:00
       }));
@@ -77,7 +91,7 @@ export class PlannedScheduleService {
 
   private async loadPendingOrders() {
     return await prisma.order.findMany({
-      where: { status: "pending" },
+      where: { status: {notIn: ["completed", "cancelled"] }},
       include: { service: true },
     });
   }
@@ -107,5 +121,4 @@ export class PlannedScheduleService {
     workTime.setHours(hour, minute, 0, 0);
     return workTime;
   }
-
 }
