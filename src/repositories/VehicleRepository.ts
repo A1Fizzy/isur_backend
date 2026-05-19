@@ -15,6 +15,15 @@ export class VehicleRepository {
       where: { id },
     });
   }
+
+  async findByPlateNumber(plateNumber: string): Promise<Vehicle | null> {
+    return await prisma.vehicle.findUnique({
+      where: { 
+        plateNumber: plateNumber.toUpperCase() 
+      }
+    });
+  }
+
   async update(id: number, data: {plateNumber?: string; model?: string; year?: number; status?: string}): Promise<Vehicle> {
   return await prisma.vehicle.update({
       where: { id },

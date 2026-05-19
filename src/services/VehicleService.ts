@@ -32,7 +32,17 @@ export class VehicleService {
       throw new Error('Некорректный год выпуска');
     }
 
-    return await this.repository.create(data);
+    const existingVehicle = await this.repository.findByPlateNumber(data.plateNumber.toUpperCase());
+    if (existingVehicle) {
+      throw new Error(`Автомобиль с госномером "${data.plateNumber}" уже существует в системе`);
+    }
+
+    const normalizedData = {
+      ...data,
+      plateNumber: data.plateNumber.toUpperCase(),
+    };
+
+    return await this.repository.create(normalizedData);
   }
 
   async getAllVehicles(): Promise<Vehicle[]> {
@@ -64,10 +74,24 @@ export class VehicleService {
       }
     }
 
+    if (data.plateNumber !== undefined) {
+      const normalizedPlateNumber = data.plateNumber.toUpperCase();
+      
+      // Проверяем, не используется ли этот госномер другим автомобилем
+      const vehicleWithSamePlate = await this.repository.findByPlateNumber(normalizedPlateNumber);
+      
+      if (vehicleWithSamePlate && vehicleWithSamePlate.id !== id) {
+        throw new Error(`Автомобиль с госномером "${data.plateNumber}" уже существует в системе`);
+      }
+    }
+
     // Объединяем старые данные с новыми
     const updatedData = {
       ...existingVehicle,
       ...data,
+      plateNumber: data.plateNumber !== undefined 
+        ? data.plateNumber.toUpperCase() 
+        : existingVehicle.plateNumber,
     };
 
     // Сохраняем обновлённые данные

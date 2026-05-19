@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { VehicleService } from '../services/VehicleService';
+import prisma from '../config/database';
 
 export class VehicleController {
   private service: VehicleService;
